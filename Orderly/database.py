@@ -30,10 +30,35 @@ def connect():
     conn.commit()
     conn.close()
     
+
+
 def get_db_connection():
     conn = sqlite3.connect('orderly.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+
+# Idecided to update the order table to have a column for pending orders
+def ensure_status_column():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+
+    cursor.execute("PRAGMA table_info(orders)")
+    columns = [col[1] for col in cursor.fetchall()]
+
+    if "status" not in columns:
+        print("Adding 'status' column to orders table...")
+        cursor.execute("ALTER TABLE orders ADD COLUMN status TEXT DEFAULT 'Pending'")
+        conn.commit()
+        print("✅ 'status' column added.")
+    else:
+        print("✅ 'status' column already exists.")
+    
+    conn.close()
+
+
+ensure_status_column()
 
 if __name__ == '__main__':
     connect()
